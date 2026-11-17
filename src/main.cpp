@@ -12,6 +12,7 @@ SDL_Window *gWindow = NULL;
 SDL_Renderer *gRenderer = NULL;
 SDL_Texture *gTexture = NULL;
 SDL_Surface *loadedSurface = NULL;
+int counter = 0;
 
 bool init()
 {
@@ -72,14 +73,72 @@ int main(int argc, char *argv[])
           if (SDL_QUIT == e.type) {
             quit = true;
           }
+          if (SDL_MOUSEBUTTONDOWN == e.type){
+            if (e.button.button == SDL_BUTTON_RIGHT){
+              if(counter % 2 == 0){
+                global_angle = 0.0f;
+                cursor_x = e.button.x - SCREEN_WIDTH / 2;
+                cursor_y = e.button.y - SCREEN_HEIGHT / 2;
+                counter++;
+              }
+              else{
+                cursor_x = 0.0f;
+                cursor_y = 0.0f;
+                counter++;
+              }
+            }
+          }
           if (SDL_KEYDOWN == e.type) {
             switch (e.key.keysym.scancode) {
-            case SDL_SCANCODE_KP_PLUS:
-              printf("SDL_SCANCODE_KP_PLUS have been presssed\n");
+            //увеличение количества вершин
+            case SDL_SCANCODE_PERIOD:
+              vertex_counter++;
               break;
-            case SDL_SCANCODE_KP_MINUS:
-              printf("SDL_SCANCODE_KP_MINUS have been presssed\n");
+            //уменьшение количества вершин
+            case SDL_SCANCODE_COMMA:
+              vertex_counter--;
+              if (vertex_counter < 3) vertex_counter = 3; // Минимум 3
               break;
+            //уменьшение количества фигур
+            case SDL_SCANCODE_N:
+              figures_counter--;
+              if (figures_counter < 1) figures_counter = 1;
+              break;
+            //увеличение количества фигур
+            case SDL_SCANCODE_M:
+              figures_counter++;
+              break;
+            //перемещение
+            case SDL_SCANCODE_W:
+              offset_y -= 5.0f;
+              break;
+            case SDL_SCANCODE_S:
+              offset_y += 5.0f;
+              break;
+            case SDL_SCANCODE_A:
+              offset_x -= 5.0f;
+              break;
+            case SDL_SCANCODE_D:
+              offset_x += 5.0f;
+              break;
+            //увеличение масштаба
+            case SDL_SCANCODE_EQUALS:
+                scale += 0.1f;
+                break;
+            //уменьшение масштаба
+            case SDL_SCANCODE_MINUS:
+                scale -= 0.1f;
+                break;
+            //вращение по часовой стрелке
+            case SDL_SCANCODE_Q:
+                global_angle += 5.0f;
+                if (global_angle >= 360.0f) global_angle -= 360.0f;
+                break;
+            //вращение против часовой стрелки
+            case SDL_SCANCODE_E:
+                global_angle -= 5.0f;
+                if (global_angle <= -360.0f) global_angle += 360.0f;
+                break;
             case SDL_SCANCODE_ESCAPE:
               quit = true;
               break;
@@ -88,8 +147,9 @@ int main(int argc, char *argv[])
             }
           }
         }
-        SDL_RenderClear(gRenderer);
+        SDL_FillRect(loadedSurface, NULL, SDL_MapRGB(loadedSurface->format, 0, 0, 0));
 
+        SDL_RenderClear(gRenderer);
         draw(loadedSurface);
 
         SDL_UpdateTexture(gTexture, NULL, loadedSurface->pixels, loadedSurface->pitch);
